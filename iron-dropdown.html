@@ -238,6 +238,15 @@ method is called on the element.
         /**
          * Overridden from `IronOverlayBehavior`.
          */
+        _finishRenderOpened: function() {
+          console.log(`iron-dropdown: _finishRenderOpened`);
+          Polymer.IronOverlayBehaviorImpl._finishRenderOpened.apply(this, arguments);
+          this._dropdownFocusChanged();
+        },
+
+        /**
+         * Overridden from `IronOverlayBehavior`.
+         */
         _renderClosed: function() {
 
           if (!this.noAnimations && this.animationConfig.close) {
@@ -340,6 +349,42 @@ method is called on the element.
           } else {
             Polymer.IronOverlayBehaviorImpl._applyFocus.apply(this, arguments);
           }
+        },
+
+        // An element within the dropdown has lost focus.
+        _dropdownElementFocusBlurred: function(event) {
+          if (event.target._blurListener) {
+            // Stop listening to blur events on the target.
+            console.log(`iron-dropdown: stopping listening to blur events on ${event.target.localName}`);
+            event.target.removeEventListener('blur', event.target._blurListener);
+          }
+          this._dropdownFocusChanged();
+        },
+
+        // The focus has changed, and we want to see whether it is now/still
+        // inside the dropdown, or whether it's moved outside the dropdown.
+        _dropdownFocusChanged: function() {
+          // Because this method is invoked in response to blur events, it can
+          // run after one element has lost focus, but before the next element
+          // has gotten the focus.
+          // We wait for the new activeElement to take effect.
+          this.async(function() {
+            var activeElement = this.shadowRoot.activeElement;
+            var focusWithinDropdown = activeElement !== null;
+            console.log(`iron-dropdown: activeElement = ${activeElement && activeElement.localName}, focusWithinDropdown = ${focusWithinDropdown}`);
+            if (focusWithinDropdown) {
+              // A new element within the dropdown has focus. Ask to be notified
+              // when that element loses focus.
+              console.log(`iron-dropdown: listening to blur events on ${activeElement.localName}`);
+              activeElement._blurListener = this._dropdownElementFocusBlurred.bind(this);
+              activeElement.addEventListener('blur', activeElement._blurListener);
+            } else if (this.opened) {
+              // The focus has moved outside of the dropdown, but the dropdown
+              // is still open. So, cancel it.
+              console.log(`iron-dropdown: cancelling dropdown`);
+              this.cancel();
+            }
+          });
         }
       });
     })();
