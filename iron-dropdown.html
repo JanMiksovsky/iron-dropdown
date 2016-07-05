@@ -354,8 +354,9 @@ method is called on the element.
           }
         },
 
-        // An element within the dropdown has lost focus.
-        _dropdownElementFocusBlurred: function(event) {
+        // An element related to the dropdown (the triggering element, or an
+        // element within the dropdown) has lost focus.
+        _activeElementBlurred: function(event) {
           if (event.target._blurListener) {
             // Stop listening to blur events on the target.
             console.log(`iron-dropdown: stopping listening to blur events on ${event.target.localName}`);
@@ -366,28 +367,44 @@ method is called on the element.
 
         // The focus has changed, and we want to see whether it is now/still
         // inside the dropdown, or whether it's moved outside the dropdown.
+        // As a special case, we also account for whether a dropdown was invoked
+        // but has on focusable element, in which case the focus should still be
+        // on the element (e.g., button) that triggered opening of the dropdown.
         _dropdownFocusChanged: function() {
           // Because this method is invoked in response to blur events, it can
           // run after one element has lost focus, but before the next element
           // has gotten the focus.
           // We wait for the new activeElement to take effect.
           this.async(function() {
-            var activeElement = this.shadowRoot ?
-              this.shadowRoot.activeElement :
-              document.activeElement;
+
+            var activeElement = this._manager.deepActiveElement;
+
+            // See if the focus is on the element that triggered the dropdown.
+            // When the overlay manager opens the dropdown, it records the node
+            // that currently has the focus. This is typically the element that
+            // triggered the display of the dropdown. Once the dropdown is
+            // open, the manager will (by default) try to apply the focus inside
+            // the dropdown. By the time we reach this point, if the focus is
+            // still on that original trigger element, then we can conclude the
+            // dropdown is not focusable. In that case, we want to track the
+            // blur event on that trigger element.
+            var focusOnTrigger = this.restoreFocusNode && this.restoreFocusNode === activeElement;
+
+            // See if the focus is somewhere within the dropdown.
             var focusWithinDropdown = this.shadowRoot ?
-              activeElement !== null :
+              this.shadowRoot.activeElement !== null :
               Polymer.dom(this).deepContains(activeElement);
-            console.log(`iron-dropdown: activeElement = ${activeElement && activeElement.localName}, focusWithinDropdown = ${focusWithinDropdown}`);
-            if (focusWithinDropdown) {
-              // A new element within the dropdown has focus. Ask to be notified
-              // when that element loses focus.
+
+            console.log(`iron-dropdown: activeElement = ${activeElement && activeElement.localName}, focusOnTrigger = ${focusOnTrigger}, focusWithinDropdown = ${focusWithinDropdown}`);
+            if (focusOnTrigger || focusWithinDropdown) {
+              // Ask to be notified when the active element loses focus.
               console.log(`iron-dropdown: listening to blur events on ${activeElement.localName}`);
-              activeElement._blurListener = this._dropdownElementFocusBlurred.bind(this);
+              activeElement._blurListener = this._activeElementBlurred.bind(this);
               activeElement.addEventListener('blur', activeElement._blurListener);
             } else if (this.opened) {
-              // The focus has moved outside of the dropdown, but the dropdown
-              // is still open. So, cancel it.
+              // The focus has moved away from the original trigger element, or
+              // moved outside of the dropdown, but the dropdown is still open.
+              // So, cancel it.
               console.log(`iron-dropdown: cancelling dropdown`);
               this.cancel();
             }
