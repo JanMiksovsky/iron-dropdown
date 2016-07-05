@@ -241,6 +241,9 @@ method is called on the element.
         _finishRenderOpened: function() {
           console.log(`iron-dropdown: _finishRenderOpened`);
           Polymer.IronOverlayBehaviorImpl._finishRenderOpened.apply(this, arguments);
+          // TODO: Consider looking at this.restoreFocusNode.
+          // If the focus is still on that node, then the dropdown isn't
+          // focusable, so we shouldn't do our magic.
           this._dropdownFocusChanged();
         },
 
@@ -369,8 +372,12 @@ method is called on the element.
           // has gotten the focus.
           // We wait for the new activeElement to take effect.
           this.async(function() {
-            var activeElement = this.shadowRoot.activeElement;
-            var focusWithinDropdown = activeElement !== null;
+            var activeElement = this.shadowRoot ?
+              this.shadowRoot.activeElement :
+              document.activeElement;
+            var focusWithinDropdown = this.shadowRoot ?
+              activeElement !== null :
+              Polymer.dom(this).deepContains(activeElement);
             console.log(`iron-dropdown: activeElement = ${activeElement && activeElement.localName}, focusWithinDropdown = ${focusWithinDropdown}`);
             if (focusWithinDropdown) {
               // A new element within the dropdown has focus. Ask to be notified
