@@ -409,6 +409,23 @@ method is called on the element.
               this.cancel();
             }
           });
+        },
+
+        /**
+         * Overridden from `IronOverlayBehavior`.
+         */
+        _restoreFocusToNode: function(node) {
+          // Only restore focus to the indicated node if focus is currently
+          // somewhere within the dropdown. If focus is outside the dropdown, the
+          // user is likely trying to tab away, in which case it would be
+          // inappropriate to grab focus back.
+          var focusStillWithinDropdown = this.shadowRoot ?
+            this.shadowRoot.activeElement !== null :
+            Polymer.dom(this).deepContains(node);
+          console.log(`iron-dropdown: focusStillWithinDropdown = ${focusStillWithinDropdown}`);
+          if (focusStillWithinDropdown) {
+            Polymer.IronOverlayBehaviorImpl._restoreFocusToNode.apply(this, arguments);
+          }
         }
       });
     })();
