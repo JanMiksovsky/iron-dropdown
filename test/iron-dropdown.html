@@ -144,6 +144,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </iron-dropdown>
     </template>
   </test-fixture>
+  
+  <test-fixture id="FocusableDropdownWithAnotherFocusableElement">
+    <template>
+      <div>
+        <iron-dropdown>
+          <div class="dropdown-content" tabindex="0">
+            <div class="subcontent" tabindex="0"></div>
+          </div>
+        </iron-dropdown>
+        <button>A focusable button</button>
+      </div>
+    </template>
+  </test-fixture>
 
   <script>
     function elementIsVisible(element) {
@@ -509,6 +522,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             expect(subcontent.style.maxHeight).to.be.not.empty;
             expect(subcontent.style.maxWidth).to.be.not.empty;
             done();
+          });
+        });
+      });
+      
+      suite('auto-cancel on blur', function() {
+
+        test('auto-cancel when focusable dropdown blurs', function(done) {
+          var elements = fixture('FocusableDropdownWithAnotherFocusableElement');
+          var dropdown = Polymer.dom(elements).querySelector('iron-dropdown');
+          var content = Polymer.dom(dropdown).querySelector('.dropdown-content');
+          var button = Polymer.dom(elements).querySelector('button');
+          dropdown.addEventListener('iron-overlay-canceled', function(event) {
+            console.log(`test: iron-overlay-canceled`);
+            // The iron-overlay-canceled event fires before the dropdown is
+            // closed, which is unfortunate. We have to wait before checking to
+            // make sure the dropdown was closed.
+            Polymer.Base.async(function() {
+              assert(!dropdown.opened);
+              done();
+            });
+          });
+          runAfterOpen(dropdown, function() {
+            console.log(`test: iron-overlay-opened`);
+            assert.equal(document.activeElement, content);
+            assert(dropdown.opened);
+            // The iron-overlay-opened event fires before the focus has settled
+            // on the dropdown. We have to wait before moving the focus away.
+            setTimeout(function() {
+              // Move the focus to another element, which should trigger the
+              // dropdown's auto-cancel behavior.
+              button.focus();
+            }, 100);
           });
         });
       });

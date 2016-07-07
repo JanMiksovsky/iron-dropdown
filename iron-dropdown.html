@@ -241,10 +241,7 @@ method is called on the element.
         _finishRenderOpened: function() {
           console.log(`iron-dropdown: _finishRenderOpened`);
           Polymer.IronOverlayBehaviorImpl._finishRenderOpened.apply(this, arguments);
-          // TODO: Consider looking at this.restoreFocusNode.
-          // If the focus is still on that node, then the dropdown isn't
-          // focusable, so we shouldn't do our magic.
-          this._dropdownFocusChanged();
+          this._dropdownFocusChanged(true);
         },
 
         /**
@@ -362,7 +359,7 @@ method is called on the element.
             console.log(`iron-dropdown: stopping listening to blur events on ${event.target.localName}`);
             event.target.removeEventListener('blur', event.target._blurListener);
           }
-          this._dropdownFocusChanged();
+          this._dropdownFocusChanged(false);
         },
 
         // The focus has changed, and we want to see whether it is now/still
@@ -370,7 +367,10 @@ method is called on the element.
         // As a special case, we also account for whether a dropdown was invoked
         // but has on focusable element, in which case the focus should still be
         // on the element (e.g., button) that triggered opening of the dropdown.
-        _dropdownFocusChanged: function() {
+        //
+        // Note: The focus check will happen *after* the iron-overlay-opened
+        // event has fired.
+        _dropdownFocusChanged: function(initialFocus) {
           // Because this method is invoked in response to blur events, it can
           // run after one element has lost focus, but before the next element
           // has gotten the focus.
@@ -392,8 +392,8 @@ method is called on the element.
 
             // See if the focus is somewhere within the dropdown.
             var focusWithinDropdown = this.shadowRoot ?
-              this.shadowRoot.activeElement !== null :
-              Polymer.dom(this).deepContains(activeElement);
+            this.shadowRoot.activeElement !== null :
+            Polymer.dom(this).deepContains(activeElement);
 
             console.log(`iron-dropdown: activeElement = ${activeElement && activeElement.localName}, focusOnTrigger = ${focusOnTrigger}, focusWithinDropdown = ${focusWithinDropdown}`);
             if (focusOnTrigger || focusWithinDropdown) {
@@ -401,6 +401,14 @@ method is called on the element.
               console.log(`iron-dropdown: listening to blur events on ${activeElement.localName}`);
               activeElement._blurListener = this._activeElementBlurred.bind(this);
               activeElement.addEventListener('blur', activeElement._blurListener);
+            } else if (initialFocus) {
+              // The focus isn't anywhere we expect, even though this is the
+              // initial check we're doing while opening the dropdown. This
+              // means the dropdown was probably programmatically opened,
+              // rather than opened by the user. In that case, we can't track
+              // the focus, and won't do our auto-cancel behavior.
+              // So: do nothing.
+              console.log(`iron-dropdown: no focus, so no auto-cancel`);
             } else if (this.opened) {
               // The focus has moved away from the original trigger element, or
               // moved outside of the dropdown, but the dropdown is still open.
