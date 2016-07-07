@@ -526,15 +526,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       });
       
-      suite('auto-cancel on blur', function() {
+      suite('auto-close on blur', function() {
 
-        test('auto-cancel when focusable dropdown blurs', function(done) {
+        test('auto-close when focusable dropdown blurs', function(done) {
           var elements = fixture('FocusableDropdownWithAnotherFocusableElement');
           var dropdown = Polymer.dom(elements).querySelector('iron-dropdown');
           var content = Polymer.dom(dropdown).querySelector('.dropdown-content');
           var button = Polymer.dom(elements).querySelector('button');
-          dropdown.addEventListener('iron-overlay-canceled', function(event) {
-            console.log(`test: iron-overlay-canceled`);
+          dropdown.addEventListener('iron-overlay-closed', function(event) {
+            console.log(`test: iron-overlay-closed`);
             // The iron-overlay-canceled event fires before the dropdown is
             // closed, which is unfortunate. We have to wait before checking to
             // make sure the dropdown was closed.

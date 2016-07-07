@@ -406,15 +406,15 @@ method is called on the element.
               // initial check we're doing while opening the dropdown. This
               // means the dropdown was probably programmatically opened,
               // rather than opened by the user. In that case, we can't track
-              // the focus, and won't do our auto-cancel behavior.
+              // the focus, and won't do our auto-close behavior.
               // So: do nothing.
-              console.log(`iron-dropdown: no focus, so no auto-cancel`);
+              console.log(`iron-dropdown: no focus, so no auto-close`);
             } else if (this.opened) {
               // The focus has moved away from the original trigger element, or
               // moved outside of the dropdown, but the dropdown is still open.
-              // So, cancel it.
-              console.log(`iron-dropdown: cancelling dropdown`);
-              this.cancel();
+              // So, close it.
+              console.log(`iron-dropdown: closing dropdown`);
+              this.close();
             }
           });
         },
