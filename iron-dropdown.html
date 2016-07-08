@@ -239,7 +239,6 @@ method is called on the element.
          * Overridden from `IronOverlayBehavior`.
          */
         _finishRenderOpened: function() {
-          console.log(`iron-dropdown: _finishRenderOpened`);
           Polymer.IronOverlayBehaviorImpl._finishRenderOpened.apply(this, arguments);
           this._dropdownFocusChanged(true);
         },
@@ -356,7 +355,6 @@ method is called on the element.
         _activeElementBlurred: function(event) {
           if (event.target._blurListener) {
             // Stop listening to blur events on the target.
-            console.log(`iron-dropdown: stopping listening to blur events on ${event.target.localName}`);
             event.target.removeEventListener('blur', event.target._blurListener);
           }
           this._dropdownFocusChanged(false);
@@ -395,10 +393,8 @@ method is called on the element.
             this.shadowRoot.activeElement !== null :
             Polymer.dom(this).deepContains(activeElement);
 
-            console.log(`iron-dropdown: activeElement = ${activeElement && activeElement.localName}, focusOnTrigger = ${focusOnTrigger}, focusWithinDropdown = ${focusWithinDropdown}`);
             if (focusOnTrigger || focusWithinDropdown) {
               // Ask to be notified when the active element loses focus.
-              console.log(`iron-dropdown: listening to blur events on ${activeElement.localName}`);
               activeElement._blurListener = this._activeElementBlurred.bind(this);
               activeElement.addEventListener('blur', activeElement._blurListener);
             } else if (initialFocus) {
@@ -408,12 +404,10 @@ method is called on the element.
               // rather than opened by the user. In that case, we can't track
               // the focus, and won't do our auto-close behavior.
               // So: do nothing.
-              console.log(`iron-dropdown: no focus, so no auto-close`);
             } else if (this.opened) {
               // The focus has moved away from the original trigger element, or
               // moved outside of the dropdown, but the dropdown is still open.
               // So, close it.
-              console.log(`iron-dropdown: closing dropdown`);
               this.close();
             }
           });
@@ -430,7 +424,6 @@ method is called on the element.
           var focusStillWithinDropdown = this.shadowRoot ?
             this.shadowRoot.activeElement !== null :
             Polymer.dom(this).deepContains(node);
-          console.log(`iron-dropdown: focusStillWithinDropdown = ${focusStillWithinDropdown}`);
           if (focusStillWithinDropdown) {
             Polymer.IronOverlayBehaviorImpl._restoreFocusToNode.apply(this, arguments);
           }
