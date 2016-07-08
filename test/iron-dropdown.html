@@ -534,7 +534,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var content = Polymer.dom(dropdown).querySelector('.dropdown-content');
           var button = Polymer.dom(elements).querySelector('button');
           dropdown.addEventListener('iron-overlay-closed', function(event) {
-            console.log(`test: iron-overlay-closed`);
             // The iron-overlay-canceled event fires before the dropdown is
             // closed, which is unfortunate. We have to wait before checking to
             // make sure the dropdown was closed.
@@ -544,7 +543,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             });
           });
           runAfterOpen(dropdown, function() {
-            console.log(`test: iron-overlay-opened`);
             assert.equal(document.activeElement, content);
             assert(dropdown.opened);
             // The iron-overlay-opened event fires before the focus has settled
@@ -553,7 +551,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               // Move the focus to another element, which should trigger the
               // dropdown's auto-cancel behavior.
               button.focus();
-            }, 100);
+            }, 200);
           });
         });
       });

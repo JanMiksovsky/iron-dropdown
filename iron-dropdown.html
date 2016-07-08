@@ -350,12 +350,15 @@ method is called on the element.
           }
         },
 
-        // An element related to the dropdown (the triggering element, or an
-        // element within the dropdown) has lost focus.
+        /**
+         * An element related to the dropdown (the triggering element, or an
+         * element within the dropdown) has lost focus.
+         */
         _activeElementBlurred: function(event) {
           if (event.target._blurListener) {
             // Stop listening to blur events on the target.
             event.target.removeEventListener('blur', event.target._blurListener);
+            event.target._blurListener = null;
           }
           this._dropdownFocusChanged(false);
         },
@@ -389,9 +392,7 @@ method is called on the element.
             var focusOnTrigger = this.restoreFocusNode && this.restoreFocusNode === activeElement;
 
             // See if the focus is somewhere within the dropdown.
-            var focusWithinDropdown = this.shadowRoot ?
-            this.shadowRoot.activeElement !== null :
-            Polymer.dom(this).deepContains(activeElement);
+            var focusWithinDropdown = this._focusWithinDropdown();
 
             if (focusOnTrigger || focusWithinDropdown) {
               // Ask to be notified when the active element loses focus.
@@ -421,11 +422,20 @@ method is called on the element.
           // somewhere within the dropdown. If focus is outside the dropdown, the
           // user is likely trying to tab away, in which case it would be
           // inappropriate to grab focus back.
-          var focusStillWithinDropdown = this.shadowRoot ?
-            this.shadowRoot.activeElement !== null :
-            Polymer.dom(this).deepContains(node);
-          if (focusStillWithinDropdown) {
+          if (this._focusWithinDropdown()) {
             Polymer.IronOverlayBehaviorImpl._restoreFocusToNode.apply(this, arguments);
+          }
+        },
+
+        /**
+         * Return true if the focus is anywhere within the dropdown.
+         */
+        _focusWithinDropdown: function() {
+          if (this.shadowRoot) {
+            return this.shadowRoot.activeElement !== null;
+          } else {
+            var activeElement = this._manager.deepActiveElement;
+            return Polymer.dom(this).deepContains(activeElement);
           }
         }
       });
