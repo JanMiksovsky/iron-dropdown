@@ -229,7 +229,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             content = Polymer.dom(dropdown).querySelector('.dropdown-content');
           });
           test('focuses the content when opened', function(done) {
-            runAfterOpen(dropdown, function() {
+            runAfterOpen(dropdown, function () {
               expect(document.activeElement).to.be.equal(content);
               done();
             });
