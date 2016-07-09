@@ -389,7 +389,9 @@ method is called on the element.
             // still on that original trigger element, then we can conclude the
             // dropdown is not focusable. In that case, we want to track the
             // blur event on that trigger element.
-            var focusOnTrigger = this.restoreFocusNode && this.restoreFocusNode === activeElement;
+            var focusOnTrigger = this.restoreFocusNode &&
+                this.restoreFocusNode === activeElement &&
+                this.restoreFocusNode !== document.body;
 
             // See if the focus is somewhere within the dropdown.
             var focusWithinDropdown = this._focusWithinDropdown();
