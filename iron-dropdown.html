@@ -366,7 +366,7 @@ method is called on the element.
         // The focus has changed, and we want to see whether it is now/still
         // inside the dropdown, or whether it's moved outside the dropdown.
         // As a special case, we also account for whether a dropdown was invoked
-        // but has on focusable element, in which case the focus should still be
+        // but has no focusable element, in which case the focus should still be
         // on the element (e.g., button) that triggered opening of the dropdown.
         //
         // Note: The focus check will happen *after* the iron-overlay-opened
@@ -389,9 +389,9 @@ method is called on the element.
             // still on that original trigger element, then we can conclude the
             // dropdown is not focusable. In that case, we want to track the
             // blur event on that trigger element.
-            var focusOnTrigger = this.restoreFocusNode &&
-                this.restoreFocusNode === activeElement &&
-                this.restoreFocusNode !== document.body;
+            var focusOnTrigger = this._restoreFocusNode &&
+                this._restoreFocusNode === activeElement &&
+                this._restoreFocusNode !== document.body;
 
             // See if the focus is somewhere within the dropdown.
             var focusWithinDropdown = this._focusWithinDropdown();
